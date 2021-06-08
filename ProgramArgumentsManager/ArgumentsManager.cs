@@ -9,7 +9,7 @@ namespace ProgramArgumentsManager
         public string ApplicationName { get; }
         public string Version { get; }
 
-        private Dictionary<Argument, string> _options;
+        private Dictionary<Argument, Argument.ArgValues> _options;
 
         public ArgumentsManager(string name) : this(name, "1.0.0") { }
 
@@ -18,8 +18,10 @@ namespace ProgramArgumentsManager
             ApplicationName = name;
             Version = version;
 
-            _options = new Dictionary<Argument, string>();
+            _options = new Dictionary<Argument, Argument.ArgValues>();
         }
+
+        private bool IsArgument(string s) => s.StartsWith("-") || s.StartsWith("--");
 
         public void AddArguments(string format, string description)
         {
@@ -36,13 +38,43 @@ namespace ProgramArgumentsManager
                 throw new ArgumentException("Le format '" + format + " n'est pas comaptible en tant que paramètre !",
                     nameof(format));
 
-            _options.Add(new Argument(formats), description);
+            _options.Add(new Argument(formats), new Argument.ArgValues(description));
         }
+
+        public void Parse(string[] args)
+        {
+            string lastArg = null;
+            foreach (string arg in args)
+            {
+                if (IsArgument(arg))
+                {
+                    lastArg = arg;
+                    _options[lastArg].Specified = true;
+                }
+                else
+                {
+                    _options[lastArg].Values.Add(arg);
+                }
+            }
+
+            foreach (Argument.ArgValues argValues in _options.Values.Where(argValues => !argValues.Specified))
+                argValues.Values = null;
+        }
+
+        public bool IsSpecified(string arg) => _options[arg].Specified;
+
+        public List<string> GetValues(string arg) => _options[arg].Values;
+
+        public string GetValue(string arg) => string.Join(" ", _options[arg]);
 
         private class Argument
         {
             private readonly string[] _names;
 
+            private Argument(string name)
+            {
+                _names = new []{name};
+            }
             public Argument(string[] names)
             {
                 _names = names;
@@ -74,6 +106,23 @@ namespace ProgramArgumentsManager
             public static bool operator !=(Argument left, Argument right)
             {
                 return !Equals(left, right);
+            }
+
+            public static implicit operator Argument(string s) => new Argument(s);
+
+            public class ArgValues
+            {
+                public string Description { get; set; }
+
+                public List<string> Values { get; set; }
+                public bool Specified { get; set; }
+
+                public ArgValues(string description)
+                {
+                    Description = description;
+                    Values = new List<string>();
+                    Specified = false;
+                }
             }
         }
     }
