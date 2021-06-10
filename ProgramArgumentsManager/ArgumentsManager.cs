@@ -6,17 +6,21 @@ namespace ProgramArgumentsManager
 {
     public class ArgumentsManager
     {
-        public string ApplicationName { get; }
+        public string AppName { get; }
+        public string AppDescription { get; }
         public string Version { get; }
 
-        private Dictionary<Argument, Argument.ArgValues> _options;
+        private readonly Dictionary<Argument, Argument.ArgValues> _options;
 
         public ArgumentsManager(string name) : this(name, "1.0.0") { }
 
-        public ArgumentsManager(string name, string version)
+        public ArgumentsManager(string name, string version) : this(name, version, null) { }
+
+        public ArgumentsManager(string name, string version, string description)
         {
-            ApplicationName = name;
+            AppName = name;
             Version = version;
+            AppDescription = description;
 
             _options = new Dictionary<Argument, Argument.ArgValues>();
         }
@@ -67,8 +71,24 @@ namespace ProgramArgumentsManager
 
         public string GetValue(string arg) => _options[arg].Values is null ? null : string.Join(" ", _options[arg].Values);
 
+        public void ShowUsage() => Console.WriteLine(GetUsage());
+
+        public string GetUsage()
+        {
+            string usage = AppName + ":\n\n";
+            if (!(AppDescription is null))
+                usage += "\t" + AppDescription.Replace("\n", "\n\t") + "\n\n";
+
+            usage += "USAGE: " + AppDomain.CurrentDomain.FriendlyName + "\n";
+
+            return _options.Aggregate(usage,
+                (current, option) =>
+                    current + option.Key.ToString().PadLeft(20) + " = " + option.Value.Description + "\n");
+        }
+
         private class Argument
         {
+            /*public enum Format
             private readonly string[] _names;
 
             private Argument(string name)
@@ -81,6 +101,8 @@ namespace ProgramArgumentsManager
             }
 
             private bool Equals(Argument other) => other._names.Any(s => _names.Contains(s));
+
+            public override string ToString() => string.Join(", ", _names);
 
             public override bool Equals(object obj)
             {
@@ -112,7 +134,7 @@ namespace ProgramArgumentsManager
 
             public class ArgValues
             {
-                public string Description { get; set; }
+                public string Description { get; }
 
                 public List<string> Values { get; set; }
                 public bool Specified { get; set; }
