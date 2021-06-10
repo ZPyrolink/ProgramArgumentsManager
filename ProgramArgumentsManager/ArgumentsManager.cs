@@ -57,7 +57,7 @@ namespace ProgramArgumentsManager
                 }
             }
 
-            foreach (Argument.ArgValues argValues in _options.Values.Where(argValues => !argValues.Specified))
+            foreach (Argument.ArgValues argValues in _options.Values.Where(argValues => !argValues.Specified || !argValues.Values.Any()))
                 argValues.Values = null;
         }
 
@@ -65,7 +65,7 @@ namespace ProgramArgumentsManager
 
         public List<string> GetValues(string arg) => _options[arg].Values;
 
-        public string GetValue(string arg) => string.Join(" ", _options[arg]);
+        public string GetValue(string arg) => _options[arg].Values is null ? null : string.Join(" ", _options[arg].Values);
 
         private class Argument
         {
