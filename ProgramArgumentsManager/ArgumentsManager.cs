@@ -4,6 +4,8 @@ using System.Linq;
 
 namespace ProgramArgumentsManager
 {
+    using Exceptions;
+
     public class ArgumentsManager
     {
         private const int _DEFAULT_PAD_LEFT = 20;
@@ -88,9 +90,17 @@ namespace ProgramArgumentsManager
                     current + option.Key.ToString().PadLeft(padLeft) + " = " + option.Key.Description + "\n");
         }
 
+        public void CheckRequired()
+        {
+            foreach (Argument argument in _options.Keys.Where(a => a.Asked == Argument.Ask.Required && !IsSpecified(a.Names[0])))
+                throw new ArgumentRequiredException(argument);
+        }
+
+        public List<Argument> GetMissingArguments() => _options.Keys.Where(a => a.Asked == Argument.Ask.Required && !IsSpecified(a.Names[0])).ToList();
+
         public class Argument
         {
-            private enum Ask
+            public enum Ask
             {
                 Required,
                 Optional
@@ -98,7 +108,7 @@ namespace ProgramArgumentsManager
 
             public string[] Names { get; }
             public string Description { get; }
-            private readonly Ask _ask;
+            public Ask Asked { get; }
 
             internal Argument(string name, string desc) : this(new[] {name}, desc) { }
 
@@ -108,11 +118,11 @@ namespace ProgramArgumentsManager
                 Description = desc;
 
                 if (desc.StartsWith("[OPTIONAL]", StringComparison.InvariantCultureIgnoreCase))
-                    _ask = Ask.Optional;
+                    Asked = Ask.Optional;
                 else if (desc.StartsWith("[REQUIRED]", StringComparison.InvariantCultureIgnoreCase))
-                    _ask = Ask.Required;
+                    Asked = Ask.Required;
                 else
-                    _ask = Ask.Required;
+                    Asked = Ask.Optional;
             }
 
             private bool Equals(Argument other) => other.Names.Any(s => Names.Contains(s));
