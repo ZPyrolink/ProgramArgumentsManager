@@ -88,36 +88,36 @@ namespace ProgramArgumentsManager
                     current + option.Key.ToString().PadLeft(padLeft) + " = " + option.Key.Description + "\n");
         }
 
-        private class Argument
+        public class Argument
         {
-            public enum Ask
+            private enum Ask
             {
                 Required,
                 Optional
             }
 
-            private readonly string[] _names;
+            public string[] Names { get; }
             public string Description { get; }
-            private Ask ask;
+            private readonly Ask _ask;
 
-            private Argument(string name, string desc) : this(new[] {name}, desc) { }
+            internal Argument(string name, string desc) : this(new[] {name}, desc) { }
 
-            public Argument(string[] names, string desc)
+            internal Argument(string[] names, string desc)
             {
-                _names = names;
+                Names = names;
                 Description = desc;
 
                 if (desc.StartsWith("[OPTIONAL]", StringComparison.InvariantCultureIgnoreCase))
-                    ask = Ask.Optional;
+                    _ask = Ask.Optional;
                 else if (desc.StartsWith("[REQUIRED]", StringComparison.InvariantCultureIgnoreCase))
-                    ask = Ask.Required;
+                    _ask = Ask.Required;
                 else
-                    ask = Ask.Required;
+                    _ask = Ask.Required;
             }
 
-            private bool Equals(Argument other) => other._names.Any(s => _names.Contains(s));
+            private bool Equals(Argument other) => other.Names.Any(s => Names.Contains(s));
 
-            public override string ToString() => string.Join(", ", _names);
+            public override string ToString() => string.Join(", ", Names);
 
             public override bool Equals(object obj)
             {
@@ -149,10 +149,10 @@ namespace ProgramArgumentsManager
 
             public class ArgValues
             {
-                public List<string> Values { get; set; }
-                public bool Specified { get; set; }
+                public List<string> Values { get; internal set; }
+                public bool Specified { get; internal set; }
 
-                public ArgValues()
+                internal ArgValues()
                 {
                     Values = new List<string>();
                     Specified = false;
