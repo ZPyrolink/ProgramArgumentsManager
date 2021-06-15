@@ -6,6 +6,8 @@ namespace ProgramArgumentsManager
 {
     public class ArgumentsManager
     {
+        private const int _DEFAULT_PAD_LEFT = 20;
+
         public string AppName { get; }
         public string AppDescription { get; }
         public string Version { get; }
@@ -25,7 +27,7 @@ namespace ProgramArgumentsManager
             _options = new Dictionary<Argument, Argument.ArgValues>();
         }
 
-        private bool IsArgument(string s) => s.StartsWith("-") || s.StartsWith("--");
+        private static bool IsArgument(string s) => s.StartsWith("-") || s.StartsWith("--");
 
         public void AddArguments(string format, string description)
         {
@@ -42,7 +44,7 @@ namespace ProgramArgumentsManager
                 throw new ArgumentException("Le format '" + format + " n'est pas comaptible en tant que paramètre !",
                     nameof(format));
 
-            _options.Add(new Argument(formats), new Argument.ArgValues(description));
+            _options.Add(new Argument(formats, description), new Argument.ArgValues());
         }
 
         public void Parse(string[] args)
@@ -71,9 +73,9 @@ namespace ProgramArgumentsManager
 
         public string GetValue(string arg) => _options[arg].Values is null ? null : string.Join(" ", _options[arg].Values);
 
-        public void ShowUsage() => Console.WriteLine(GetUsage());
+        public void ShowUsage(int padLeft = _DEFAULT_PAD_LEFT) => Console.WriteLine(GetUsage(padLeft));
 
-        public string GetUsage()
+        public string GetUsage(int padLeft = _DEFAULT_PAD_LEFT)
         {
             string usage = AppName + ":\n\n";
             if (!(AppDescription is null))
@@ -83,21 +85,34 @@ namespace ProgramArgumentsManager
 
             return _options.Aggregate(usage,
                 (current, option) =>
-                    current + option.Key.ToString().PadLeft(20) + " = " + option.Value.Description + "\n");
+                    current + option.Key.ToString().PadLeft(padLeft) + " = " + option.Key.Description + "\n");
         }
 
         private class Argument
         {
-            /*public enum Format
-            private readonly string[] _names;
-
-            private Argument(string name)
+            public enum Ask
             {
-                _names = new []{name};
+                Required,
+                Optional
             }
-            public Argument(string[] names)
+
+            private readonly string[] _names;
+            public string Description { get; }
+            private Ask ask;
+
+            private Argument(string name, string desc) : this(new[] {name}, desc) { }
+
+            public Argument(string[] names, string desc)
             {
                 _names = names;
+                Description = desc;
+
+                if (desc.StartsWith("[OPTIONAL]", StringComparison.InvariantCultureIgnoreCase))
+                    ask = Ask.Optional;
+                else if (desc.StartsWith("[REQUIRED]", StringComparison.InvariantCultureIgnoreCase))
+                    ask = Ask.Required;
+                else
+                    ask = Ask.Required;
             }
 
             private bool Equals(Argument other) => other._names.Any(s => _names.Contains(s));
@@ -130,18 +145,15 @@ namespace ProgramArgumentsManager
                 return !Equals(left, right);
             }
 
-            public static implicit operator Argument(string s) => new Argument(s);
+            public static implicit operator Argument(string s) => new Argument(s, "Converted argument");
 
             public class ArgValues
             {
-                public string Description { get; }
-
                 public List<string> Values { get; set; }
                 public bool Specified { get; set; }
 
-                public ArgValues(string description)
+                public ArgValues()
                 {
-                    Description = description;
                     Values = new List<string>();
                     Specified = false;
                 }
