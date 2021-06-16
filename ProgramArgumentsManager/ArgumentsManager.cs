@@ -75,6 +75,8 @@ namespace ProgramArgumentsManager
 
         public string GetValue(string arg) => _options[arg].Values is null ? null : string.Join(" ", _options[arg].Values);
 
+        public bool HasValue(string arg) => _options[arg].Values != null;
+
         public void ShowUsage(int padLeft = _DEFAULT_PAD_LEFT) => Console.WriteLine(GetUsage(padLeft));
 
         public string GetUsage(int padLeft = _DEFAULT_PAD_LEFT)
@@ -98,7 +100,15 @@ namespace ProgramArgumentsManager
                 throw new ArgumentRequiredException(argument);
         }
 
-        public List<Argument> GetMissingArguments() => _options.Keys.Where(a => a.Asked == Argument.Ask.Required && !IsSpecified(a.Names[0])).ToList();
+        public List<Argument> GetMissingArguments() => GetMissingArguments(false);
+        public List<Argument> GetMissingArguments(bool permitNull)
+        {
+            Func<Argument, bool> predicate = a => permitNull ?
+                a.Asked == Argument.Ask.Required && !IsSpecified(a.Names[0]) :
+                !HasValue(a.Names[0]);
+
+            return _options.Keys.Where(predicate).ToList();
+        }
 
         public class Argument
         {
@@ -112,7 +122,7 @@ namespace ProgramArgumentsManager
             public string Description { get; }
             public Ask Asked { get; internal set; }
 
-            internal Argument(string name, string desc) : this(new[] {name}, desc) { }
+            internal Argument(string name, string desc) : this(new[] { name }, desc) { }
 
             internal Argument(string[] names, string desc)
             {
