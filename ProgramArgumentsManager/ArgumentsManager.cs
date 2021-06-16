@@ -90,6 +90,8 @@ namespace ProgramArgumentsManager
                     current + option.Key.ToString().PadLeft(padLeft) + " = " + option.Key.Description + "\n");
         }
 
+        public void ForceState(string arg, Argument.Ask ask) => _options.Keys.First(k => k.Names.Contains(arg)).Asked = ask;
+
         public void CheckRequired()
         {
             foreach (Argument argument in _options.Keys.Where(a => a.Asked == Argument.Ask.Required && !IsSpecified(a.Names[0])))
@@ -108,7 +110,7 @@ namespace ProgramArgumentsManager
 
             public string[] Names { get; }
             public string Description { get; }
-            public Ask Asked { get; }
+            public Ask Asked { get; internal set; }
 
             internal Argument(string name, string desc) : this(new[] {name}, desc) { }
 
@@ -125,7 +127,8 @@ namespace ProgramArgumentsManager
                     Asked = Ask.Optional;
             }
 
-            private bool Equals(Argument other) => other.Names.Any(s => Names.Contains(s));
+            private bool Equals(Argument other) => other.Names.Any(s => Names.Contains(s) ||
+                Names.Contains("-" + s) || Names.Contains("--" + s));
 
             public override string ToString() => string.Join(", ", Names);
 
