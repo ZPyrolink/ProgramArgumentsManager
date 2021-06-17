@@ -14,6 +14,8 @@ namespace ProgramArgumentsManager
         public string AppDescription { get; }
         public string Version { get; }
 
+        public string FullName => AppName + " " + Version;
+
         private readonly Dictionary<Argument, Argument.ArgValues> _options;
 
         public ArgumentsManager(string name) : this(name, "1.0.0") { }
@@ -46,8 +48,42 @@ namespace ProgramArgumentsManager
                 throw new ArgumentException("Le format '" + format + " n'est pas comaptible en tant que paramètre !",
                     nameof(format));
 
-            _options.Add(new Argument(formats, description), new Argument.ArgValues());
+            AddArguments(new Argument(formats, description));
         }
+
+        private void AddArguments(Argument arg) => _options.Add(arg, new Argument.ArgValues());
+
+        public void AddHelpArgument() => AddArguments("-?, --help", "Show this help page");
+
+        public bool CheckHelp() => IsSpecified("?");
+
+		public void CheckHelp<T>(Action callback)
+		{
+            if (IsSpecified("?"))
+                callback();
+		}
+
+        public void CheckHelp<T1>(Action<T1> callback, T1 arg1)
+		{
+            if (IsSpecified("?"))
+                callback(arg1);
+        }
+
+        public void CheckHelp<T1, T2>(Action<T1, T2> callback, T1 arg1, T2 arg2)
+        {
+            if (IsSpecified("?"))
+                callback(arg1, arg2);
+        }
+
+        public void CheckHelp<TResult, T1, T2>(Func<T1, T2, TResult> callback, T1 param1, T2 param2)
+        {
+            if (IsSpecified("?"))
+                callback(param1, param2);
+        }
+
+        public void AddVersionArgument() => AddArguments("-v, --version", "Show the app version");
+
+        public bool CheckVersion() => IsSpecified("v");
 
         public void Parse(string[] args)
         {
