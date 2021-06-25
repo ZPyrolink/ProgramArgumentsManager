@@ -102,14 +102,23 @@ namespace ProgramArgumentsManager
 			string lastArg = null;
 			foreach (string arg in args)
 			{
-				if (IsArgument(arg))
+				try
 				{
-					lastArg = arg;
-					_options[lastArg].Specified = true;
+					if (IsArgument(arg))
+					{
+						lastArg = arg;
+						_options[lastArg].Specified = true;
+					}
+					else
+					{
+						_options[lastArg].Values.Add(arg);
+					}
 				}
-				else
+				catch (KeyNotFoundException)
 				{
-					_options[lastArg].Values.Add(arg);
+					int i = lastArg is null ?
+						throw new FirstNoArgumentException($"The first command ({arg}) isn't an argument !") :
+						throw new UnknownArgumentException(lastArg, $"{lastArg} doesn't exist !");
 				}
 			}
 
