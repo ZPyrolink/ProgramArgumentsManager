@@ -46,8 +46,9 @@
   <ItemGroup>
     <Compile Include="ArgumentsManager.cs" />
     <Compile Include="Exceptions\ArgumentRequiredException.cs" />
+    <Compile Include="Exceptions\UnknownArgumentException.cs" />
+    <Compile Include="Exceptions\FirstNoArgumentException.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
-  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>
