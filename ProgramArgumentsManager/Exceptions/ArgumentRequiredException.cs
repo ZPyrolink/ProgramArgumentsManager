@@ -1,4 +1,6 @@
-﻿using System;
+﻿using ProgramArgumentsManager;
+
+using System;
 using System.Runtime.Serialization;
 
 namespace ProgramArgumentsManager.Exceptions
@@ -6,11 +8,11 @@ namespace ProgramArgumentsManager.Exceptions
     [Serializable]
     public class ArgumentRequiredException : Exception
     {
-        internal ArgumentsManager.Argument Argument;
+        internal Argument Argument;
 
         public ArgumentRequiredException() { }
 
-        internal ArgumentRequiredException(ArgumentsManager.Argument argument) : this($"The argument {argument} is required !")
+        internal ArgumentRequiredException(Argument argument) : this($"The argument {argument} is required !")
         {
             Argument = argument;
         }

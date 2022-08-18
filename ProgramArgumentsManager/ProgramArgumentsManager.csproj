@@ -44,10 +44,12 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Argument.cs" />
     <Compile Include="ArgumentsManager.cs" />
     <Compile Include="Exceptions\ArgumentRequiredException.cs" />
     <Compile Include="Exceptions\UnknownArgumentException.cs" />
     <Compile Include="Exceptions\FirstNoArgumentException.cs" />
+    <Compile Include="PositionnalArgument.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
