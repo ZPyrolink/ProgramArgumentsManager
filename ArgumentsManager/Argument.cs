@@ -1,10 +1,10 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
-using System.Runtime.InteropServices;
 
 namespace ArgumentsManager
 {
-	public class Argument
+	public class Argument : IEnumerable<string>
 	{
 		public const string REQUIRED = "[REQUIRED]";
 		public const string OPTIONAL = "[OPTIONAL]";
@@ -34,5 +34,11 @@ namespace ArgumentsManager
 			Values ??= new();
 			Values.Add(value);
 		}
+
+		public override string ToString() => string.Join(", ", Names);
+
+		public IEnumerator<string> GetEnumerator() => Values.GetEnumerator();
+
+		IEnumerator IEnumerable.GetEnumerator() => ((IEnumerable) Values).GetEnumerator();
 	}
 }
